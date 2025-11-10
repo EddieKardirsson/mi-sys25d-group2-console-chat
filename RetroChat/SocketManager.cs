@@ -15,7 +15,7 @@ public class SocketManager
     private const string Uri = "wss://api.leetcode.se";
     private const string Path = "/sys25d";
 
-    public static Task Connect()
+    public static async Task Connect()
     {
         _client = new SocketIO(Uri, new SocketIOOptions
         {
@@ -27,7 +27,8 @@ public class SocketManager
         HandleConnection();
         HandleDisconnection();
         
-        throw new NotImplementedException();
+        await EstablishConnectionAsync();
+        
     }
     
     private static void HandleError() =>

@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using System.Text.Json;
 
 namespace RetroChat;
@@ -84,5 +85,57 @@ public class ChatManager
     }
     
     #endregion
+    #endregion
+    
+    #region Main Menu
+    
+    // TODO: Implement menu display and navigation methods here.
+    
+    #endregion
+    
+    #region Handle Messages
+
+    public static async Task HandleUserMessage(User user)
+    {
+        while (true)
+        {
+            if (SocketManager.Client.Connected)
+            {
+                Console.Write("Enter your message: ");
+                string? input = Console.ReadLine();
+                
+                if(string.IsNullOrEmpty(input)) continue;
+
+                if (input.ToLower() == "/quit" || input.ToLower() == "/exit") Environment.Exit(0);
+
+                try
+                {
+                    Message message = new Message(input, user);
+                    await message.SendMessage(user, input, SocketManager.GeneralChatEvent);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Error sending message: {e.Message}");
+                }
+            }
+            else await AttemptReconnectToServer();
+        }
+    }
+    
+    private static async Task AttemptReconnectToServer()
+    {
+        Console.WriteLine("Not connected to the server. Attempting to reconnect...");
+        try
+        {
+            await SocketManager.Connect();
+            await Task.Delay(1000);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Reconnection failed: {e.Message}");
+            await Task.Delay(5000); 
+        }
+    }
+    
     #endregion
 }

@@ -2,7 +2,7 @@
 
 class Program
 {
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
         ChatManager chatManager = new ChatManager();
         User user = chatManager.StartUp();
@@ -10,8 +10,8 @@ class Program
         
         // TODO: DisplayMenu
         
-        // TODO: Connect to server
+        await SocketManager.Connect();
         
-        // TODO: Handle messages
+        await ChatManager.HandleUserMessage(user);
     }
 }

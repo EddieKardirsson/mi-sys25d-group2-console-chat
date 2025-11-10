@@ -4,17 +4,14 @@ class Program
 {
     static void Main(string[] args)
     {
-        Console.WriteLine("Hello, World!");
-        Console.WriteLine("Enter your username: ");
-        string? input = Console.ReadLine();
-
-        while (input == null)
-        {
-            Console.WriteLine("Invalid input");
-            Console.WriteLine("Enter your username: ");
-            input = Console.ReadLine(); 
-        }
-
-        Console.WriteLine($"{input} is logged in");
+        ChatManager chatManager = new ChatManager();
+        User user = chatManager.StartUp();
+        Console.WriteLine($"Connected as {user.Name}");
+        
+        // TODO: DisplayMenu
+        
+        // TODO: Connect to server
+        
+        // TODO: Handle messages
     }
 }

@@ -16,20 +16,18 @@ public class Message
 
     public async Task SendMessage(User user, string inMessage, string eventName)
     {
-        string jsonMessage = JsonSerializer.Serialize(this);
         string outMessage = $"\n{user.Name} [{TimeStamp}]: \n{inMessage}";
 
-        await SocketManager.Client.EmitAsync(eventName, jsonMessage);
+        await SocketManager.Client.EmitAsync(eventName, this);
         Console.WriteLine(outMessage);
     }
 
-    public static async Task ReceiveMessage(string message)
+    public static async Task ReceiveMessage(Message message)
     {
-        Message? deserializedMessage = JsonSerializer.Deserialize<Message>(message);
 
         try
         {
-            string output = $"\n{deserializedMessage?.User.Name} [{deserializedMessage?.TimeStamp}]: \n{deserializedMessage?.Text}";
+            string output = $"\n{message?.User.Name} [{message?.TimeStamp}]: \n{message?.Text}";
             Console.WriteLine(output);
         }
         catch (Exception e)

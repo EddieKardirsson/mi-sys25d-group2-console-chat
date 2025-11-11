@@ -43,7 +43,7 @@ public class SocketManager
             Console.WriteLine($"Received message event {eventName}: ");
             try
             {
-                string receivedMessage = response.GetValue<string>();
+                Message receivedMessage = response.GetValue<Message>();
                 _ = Message.ReceiveMessage(receivedMessage);
             }
             catch (Exception e)

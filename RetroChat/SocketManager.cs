@@ -43,7 +43,6 @@ public class SocketManager
             {
                 string receivedMessage = response.GetValue<string>();
                 _ = Message.ReceiveMessage(receivedMessage);
-                Console.WriteLine($"{receivedMessage}");
             }
             catch (Exception e)
             {

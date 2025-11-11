@@ -11,6 +11,7 @@ public class SocketManager
     public static SocketIO Client => _client;
 
     public const string GeneralChatEvent = "/general";
+    public const string UserJoinedEvent = "/userJoined";
     
     private const string Uri = "wss://api.leetcode.se";
     private const string Path = "/sys25d";
@@ -26,6 +27,7 @@ public class SocketManager
         HandleReceivedMessage(GeneralChatEvent);
         HandleConnection();
         HandleDisconnection();
+        HandleUserJoinedEvent(UserJoinedEvent);
         
         await EstablishConnectionAsync();
         
@@ -84,4 +86,11 @@ public class SocketManager
             throw;
         }
     }
+    
+    // Get user joined event and display it on the screen.
+    private static void HandleUserJoinedEvent(string eventName) => _client.On(eventName, response =>
+    {
+        string userJoined = response.GetValue<string>();
+        Console.WriteLine($"User {userJoined} joined the chat.");
+    });
 }

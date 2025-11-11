@@ -13,6 +13,8 @@ class Program
         // TODO: DisplayMenu
         
         await SocketManager.Connect();
+
+        await ChatManager.SendJoinMessageEvent(user);
         
         await ChatManager.HandleUserMessage(user);
     }

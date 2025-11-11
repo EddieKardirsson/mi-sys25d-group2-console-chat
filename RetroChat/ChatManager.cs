@@ -136,6 +136,14 @@ public class ChatManager
             await Task.Delay(5000); 
         }
     }
+
+    public static async Task SendJoinMessageEvent(User? user)
+    {
+        if (user != null && SocketManager.Client.Connected)
+        {
+            await SocketManager.Client.EmitAsync(SocketManager.UserJoinedEvent, user.Name);
+        }
+    }
     
     #endregion
 }

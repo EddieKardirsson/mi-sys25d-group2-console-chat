@@ -25,6 +25,17 @@ public class Message
 
     public static async Task ReceiveMessage(string message)
     {
-        Console.WriteLine(message);
+        Message? deserializedMessage = JsonSerializer.Deserialize<Message>(message);
+
+        try
+        {
+            string output = $"\n{deserializedMessage?.User.Name} [{deserializedMessage?.TimeStamp}]: \n{deserializedMessage?.Text}";
+            Console.WriteLine(output);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error deserializing message: {e.Message}");
+            Console.WriteLine(message);
+        }
     }
 }

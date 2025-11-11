@@ -42,7 +42,7 @@ public class SocketManager
             try
             {
                 string receivedMessage = response.GetValue<string>();
-                // _ = Message.ReceiveMessage(receivedMessage);
+                _ = Message.ReceiveMessage(receivedMessage);
                 Console.WriteLine($"{receivedMessage}");
             }
             catch (Exception e)

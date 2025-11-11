@@ -73,6 +73,7 @@ public class ChatManager
         
         User user = new User(username);
         LoggedInUser = user;
+        _storedUsers.Add(user);
         
         string usersJson = JsonSerializer.Serialize(_storedUsers, new JsonSerializerOptions
         {

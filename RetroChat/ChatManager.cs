@@ -228,7 +228,7 @@ public class ChatManager
                 
                 if(string.IsNullOrEmpty(input)) continue;
 
-                if (input.ToLower() == "/quit" || input.ToLower() == "/exit")
+                if (CheckForExitCommand(input))
                 {
                     await SendLeaveJoinMessageEvent(user, SocketManager.UserLeftEvent);
                     await DisconnectAndExit();
@@ -251,13 +251,9 @@ public class ChatManager
         }
     }
 
-    public static async Task DisconnectAndExit()
-    {
-        LoggedInUser = null;
-        Console.WriteLine("Disposing client...");
-        await SocketManager.Disconnect();
-        Environment.Exit(0);
-    }
+    private static bool CheckForExitCommand(string input) =>
+        input.ToLower() == SocketManager.ExitCommands[0] || input.ToLower() == SocketManager.ExitCommands[1];
+    
 
     private static async Task AttemptReconnectToServer()
     {
@@ -283,4 +279,12 @@ public class ChatManager
     }
     
     #endregion
+    
+    public static async Task DisconnectAndExit()
+    {
+        LoggedInUser = null;
+        Console.WriteLine("Disposing client...");
+        await SocketManager.Disconnect();
+        Environment.Exit(0);
+    }
 }

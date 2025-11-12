@@ -10,12 +10,13 @@ public class SocketManager
     public static bool IsConnected => _isConnected;
     public static SocketIO Client => _client;
 
+    private const string Uri = "wss://api.leetcode.se";
+    private const string Path = "/sys25d";
+    
     public const string GeneralChatEvent = "/general";
     public const string UserJoinedEvent = "/userJoined";
     public const string UserLeftEvent = "/userLeft";
-    
-    private const string Uri = "wss://api.leetcode.se";
-    private const string Path = "/sys25d";
+    public static readonly string[] ExitCommands = ["/quit", "/exit"];
 
     public static async Task Connect(string eventName = GeneralChatEvent)
     {

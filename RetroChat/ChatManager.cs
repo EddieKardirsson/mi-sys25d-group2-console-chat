@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RetroChat;
 
@@ -88,8 +90,126 @@ public class ChatManager
     #endregion
     
     #region Main Menu
-    
-    // TODO: Implement menu display and navigation methods here.
+   
+    // TODO: Implement menu display and navigation methods here. 
+    public static void DisplayMenu()
+    {
+        bool showMainMenu = true;
+
+        while (showMainMenu)
+        {
+            Console.Clear();
+            Console.WriteLine("Menu");
+            Console.WriteLine("1. Send message");
+            Console.WriteLine("2. Select chat room");
+            Console.WriteLine("3 Send private message");
+            Console.WriteLine("Q. Exit");
+            Console.Write("Enter your choice: ");
+
+            char choice = Char.ToLower(Console.ReadKey(true).KeyChar);
+
+            switch (choice)
+            {
+                case '1':
+                    Console.Clear();
+                    Console.WriteLine("Entering General Chat..."); 
+                    // Något för att kunna komma in i Genereal chat
+                    WaitForReturnTomenu();
+                    break;
+
+
+                case '2':
+                    DisplayChatRoomMenu();
+                    break;
+
+                case '3':
+                    Console.Clear();
+                    Console.WriteLine("Send DM");
+                    WaitForReturnTomenu();
+                    break;
+
+                case 'q':
+                    Console.WriteLine("Exiting application...");
+                    showMainMenu = false;
+                    break; 
+
+                default:
+                    Console.WriteLine("Invalid input/choice. Try again.");
+                    Thread.Sleep(1000);
+                    break;
+
+
+            }
+        }
+    } 
+
+//ChatRoom submenu
+    private static void DisplayChatRoomMenu()
+    {
+
+        bool showRoom = true;
+
+        while (showRoom)
+        {
+            Console.Clear();
+            Console.WriteLine(" Select chat room");
+            Console.WriteLine("1.");
+            Console.WriteLine("2.");
+            Console.WriteLine("R. Return nack to menu");
+            Console.Write("Select a chat room: ");
+
+            char choice = char.ToLower(Console.ReadKey(true).KeyChar);
+
+            switch (choice)
+            {
+                case '1':
+                    EnterChatRoom("Room 1");
+                    break;
+
+                case '2':
+                    EnterChatRoom("Room 2");
+                    break;
+                
+                case 'r':
+                    showRoom = false;
+                    break;
+
+                default:
+                    Console.WriteLine("Invalid input/choice. Try again.");
+                    Thread.Sleep(1000);
+                    break;
+            }
+        }
+    }
+
+    private static void EnterChatRoom(string roomName)
+    {
+        Console.Clear();
+        Console.WriteLine($"You are in room {roomName}");
+        Console.WriteLine("Press 'B' to go back to choose room");
+
+        bool inRoom = true;
+        
+        while (inRoom)
+        {
+            char key = char.ToLower(Console.ReadKey(true).KeyChar);
+            if (key == 'b')
+            {
+                inRoom = false;
+            }
+        }
+    }
+
+    private static void WaitForReturnTomenu()
+    {
+        Console.WriteLine("\nPress 'M' to return to Main Menu");
+        while (true)
+        {
+            char key = char.ToLower(Console.ReadKey(true).KeyChar);
+            if (key == 'm')
+                break;
+        }
+    }
     
     #endregion
     

@@ -35,7 +35,7 @@ class Program
                 Console.WriteLine("\nEntering General Chat");
                 await SocketManager.Connect();
 
-                await ChatManager.SendJoinMessageEvent(user);
+                await ChatManager.SendLeaveJoinMessageEvent(user);
         
                 await ChatManager.HandleUserMessage(user);
                 break;
@@ -49,6 +49,7 @@ class Program
                 break;
             case 'q':
             case 'Q':
+                await ChatManager.SendLeaveJoinMessageEvent(user, SocketManager.UserLeftEvent);
                 await ChatManager.DisconnectAndExit();
                 break;
             default:

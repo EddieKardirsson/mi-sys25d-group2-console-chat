@@ -230,6 +230,7 @@ public class ChatManager
 
                 if (input.ToLower() == "/quit" || input.ToLower() == "/exit")
                 {
+                    await SendLeaveJoinMessageEvent(user, SocketManager.UserLeftEvent);
                     await DisconnectAndExit();
                 }
 
@@ -252,6 +253,7 @@ public class ChatManager
 
     public static async Task DisconnectAndExit()
     {
+        LoggedInUser = null;
         Console.WriteLine("Disposing client...");
         await SocketManager.Disconnect();
         Environment.Exit(0);
@@ -272,7 +274,7 @@ public class ChatManager
         }
     }
 
-    public static async Task SendJoinMessageEvent(User? user, string eventName = SocketManager.UserJoinedEvent)
+    public static async Task SendLeaveJoinMessageEvent(User? user, string eventName = SocketManager.UserJoinedEvent)
     {
         if (user != null && SocketManager.Client.Connected)
         {

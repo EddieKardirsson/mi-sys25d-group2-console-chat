@@ -34,6 +34,7 @@ public class SocketManager
         HandleConnection();
         HandleDisconnection();
         HandleUserJoinedEvent(UserJoinedEvent);
+        HandleUserLeftEvent(UserLeftEvent);
         
         await EstablishConnectionAsync();
         
@@ -99,6 +100,12 @@ public class SocketManager
     {
         string userJoined = response.GetValue<string>();
         Console.WriteLine($"User {userJoined} joined the chat.");
+    });
+
+    private static void HandleUserLeftEvent(string eventName) => _client.On(eventName, response =>
+    {
+        string userLeft = response.GetValue<string>();
+        Console.WriteLine($"User {userLeft} left the chat.");
     });
     
     public static Task Disconnect()

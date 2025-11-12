@@ -217,7 +217,7 @@ public class ChatManager
     
     #region Handle Messages
 
-    public static async Task HandleUserMessage(User user)
+    public static async Task HandleUserMessage(User user, string eventName = SocketManager.GeneralChatEvent)
     {
         while (true)
         {
@@ -233,7 +233,7 @@ public class ChatManager
                 try
                 {
                     Message message = new Message(input, user);
-                    await message.SendMessage(user, input, SocketManager.GeneralChatEvent);
+                    await message.SendMessage(user, input, eventName);
                     
                     // Just for testing, remove it later when fully implementing the chat.
                     Chat.StoreMessage(message);
@@ -262,11 +262,11 @@ public class ChatManager
         }
     }
 
-    public static async Task SendJoinMessageEvent(User? user)
+    public static async Task SendJoinMessageEvent(User? user, string eventName = SocketManager.UserJoinedEvent)
     {
         if (user != null && SocketManager.Client.Connected)
         {
-            await SocketManager.Client.EmitAsync(SocketManager.UserJoinedEvent, user.Name);
+            await SocketManager.Client.EmitAsync(eventName, user.Name);
         }
     }
     

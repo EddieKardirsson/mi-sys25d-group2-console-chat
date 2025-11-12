@@ -16,7 +16,7 @@ public class SocketManager
     private const string Uri = "wss://api.leetcode.se";
     private const string Path = "/sys25d";
 
-    public static async Task Connect()
+    public static async Task Connect(string eventName = GeneralChatEvent)
     {
         _client = new SocketIO(Uri, new SocketIOOptions
         {
@@ -29,7 +29,7 @@ public class SocketManager
         // end of testing section.
         
         HandleError();
-        HandleReceivedMessage(GeneralChatEvent);
+        HandleReceivedMessage(eventName);
         HandleConnection();
         HandleDisconnection();
         HandleUserJoinedEvent(UserJoinedEvent);

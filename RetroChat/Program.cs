@@ -49,7 +49,7 @@ class Program
                 break;
             case 'q':
             case 'Q':
-                Environment.Exit(0);
+                await ChatManager.DisconnectAndExit();
                 break;
             default:
                 break;

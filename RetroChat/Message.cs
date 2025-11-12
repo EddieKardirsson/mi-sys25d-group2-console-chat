@@ -19,6 +19,9 @@ public class Message
         string outMessage = $"\n{user.Name} [{TimeStamp}]: \n{inMessage}";
 
         await SocketManager.Client.EmitAsync(eventName, this);
+        
+        // Just for testing, to see the actual message sent on Postman, uncomment the following line:
+        // await SocketManager.Client.EmitAsync("message", outMessage);
         Console.WriteLine(outMessage);
         
     }

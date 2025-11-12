@@ -4,7 +4,7 @@ using SocketIOClient;
 
 public class SocketManager
 {
-    private static SocketIO _client;
+    private static SocketIO _client = null!;
     private static bool _isConnected = false;
     
     public static bool IsConnected => _isConnected;
@@ -12,6 +12,7 @@ public class SocketManager
 
     public const string GeneralChatEvent = "/general";
     public const string UserJoinedEvent = "/userJoined";
+    public const string UserLeftEvent = "/userLeft";
     
     private const string Uri = "wss://api.leetcode.se";
     private const string Path = "/sys25d";
@@ -99,4 +100,11 @@ public class SocketManager
         string userJoined = response.GetValue<string>();
         Console.WriteLine($"User {userJoined} joined the chat.");
     });
+    
+    public static Task Disconnect()
+    {
+        Console.WriteLine("Disconnecting from server...");
+        _client.Dispose();
+        return Task.CompletedTask;
+    }
 }

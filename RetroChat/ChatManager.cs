@@ -228,7 +228,10 @@ public class ChatManager
                 
                 if(string.IsNullOrEmpty(input)) continue;
 
-                if (input.ToLower() == "/quit" || input.ToLower() == "/exit") {Environment.Exit(0);}
+                if (input.ToLower() == "/quit" || input.ToLower() == "/exit")
+                {
+                    await DisconnectAndExit();
+                }
 
                 try
                 {
@@ -246,7 +249,14 @@ public class ChatManager
             else await AttemptReconnectToServer();
         }
     }
-    
+
+    public static async Task DisconnectAndExit()
+    {
+        Console.WriteLine("Disposing client...");
+        await SocketManager.Disconnect();
+        Environment.Exit(0);
+    }
+
     private static async Task AttemptReconnectToServer()
     {
         Console.WriteLine("Not connected to the server. Attempting to reconnect...");

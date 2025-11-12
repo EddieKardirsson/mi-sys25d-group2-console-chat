@@ -7,7 +7,7 @@ public class Chat : IChat
     public List<Message> Messages { get; private set; } = new List<Message>();
     private static readonly string DataFilePath = $"{ChatManager.DataFilePath}chats/";
     private static string? _chatFilePath;
-    private const string DefaultChatId = "general";
+    public const string DefaultChatId = "general";
     
     public virtual void StoreMessage(Message message, string chatId = DefaultChatId)
     {

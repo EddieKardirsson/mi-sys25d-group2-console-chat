@@ -16,7 +16,8 @@ public class SocketManager
     public const string GeneralChatEvent = "/general";
     public const string UserJoinedEvent = "/userJoined";
     public const string UserLeftEvent = "/userLeft";
-    public static readonly string[] ExitCommands = ["/quit", "/exit"];
+    public static readonly List<string> ExitCommands = ["/quit", "/exit"];
+    public static readonly List<string> LeaveChatCommands = ["/l", "/lc", "/leave"];
 
     public static async Task Connect(string eventName = GeneralChatEvent)
     {

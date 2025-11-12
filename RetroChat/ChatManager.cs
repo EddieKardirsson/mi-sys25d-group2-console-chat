@@ -251,8 +251,15 @@ public class ChatManager
         }
     }
 
-    private static bool CheckForExitCommand(string input) =>
-        input.ToLower() == SocketManager.ExitCommands[0] || input.ToLower() == SocketManager.ExitCommands[1];
+    private static bool CheckForExitCommand(string input)
+        {
+            bool bIsExitCommand = false;
+            SocketManager.ExitCommands.ForEach(c =>
+            {
+                 if(input.ToLower() == c) bIsExitCommand = true;               
+            });
+            return bIsExitCommand;
+        }
     
 
     private static async Task AttemptReconnectToServer()
@@ -270,7 +277,7 @@ public class ChatManager
         }
     }
 
-    public static async Task SendLeaveJoinMessageEvent(User? user, string eventName = SocketManager.UserJoinedEvent)
+    public static async Task SendLeaveJoinMessageEvent(User? user, string eventName)
     {
         if (user != null && SocketManager.Client.Connected)
         {

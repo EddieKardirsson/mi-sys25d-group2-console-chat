@@ -35,7 +35,7 @@ class Program
                 Console.WriteLine("\nEntering General Chat");
                 await SocketManager.Connect();
 
-                await ChatManager.SendLeaveJoinMessageEvent(user);
+                await ChatManager.SendLeaveJoinMessageEvent(user, SocketManager.UserJoinedEvent);
         
                 await ChatManager.HandleUserMessage(user);
                 break;

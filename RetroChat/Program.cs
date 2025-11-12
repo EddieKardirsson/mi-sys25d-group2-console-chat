@@ -11,7 +11,7 @@ class Program
         Console.WriteLine($"Connected as {user.Name}");
         
         // TODO: DisplayMenu
-        
+     
         await SocketManager.Connect();
 
         await ChatManager.SendJoinMessageEvent(user);

@@ -20,6 +20,7 @@ public class Message
 
         await SocketManager.Client.EmitAsync(eventName, this);
         Console.WriteLine(outMessage);
+        
     }
 
     public static async Task ReceiveMessage(Message message)

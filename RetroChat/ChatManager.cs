@@ -9,6 +9,8 @@ public class ChatManager
     private static List<User> _storedUsers = new List<User>();
     public static User? LoggedInUser { get; private set; }
     
+    public static Chat Chat { get; } = new Chat();
+    
     public static readonly string DataFilePath = "./localData/";
     private static readonly string UserFilePath = DataFilePath + "users.json";
     
@@ -226,12 +228,15 @@ public class ChatManager
                 
                 if(string.IsNullOrEmpty(input)) continue;
 
-                if (input.ToLower() == "/quit" || input.ToLower() == "/exit") Environment.Exit(0);
+                if (input.ToLower() == "/quit" || input.ToLower() == "/exit") {Environment.Exit(0);}
 
                 try
                 {
                     Message message = new Message(input, user);
                     await message.SendMessage(user, input, SocketManager.GeneralChatEvent);
+                    
+                    // Just for testing, remove it later when fully implementing the chat.
+                    Chat.StoreMessage(message);
                 }
                 catch (Exception e)
                 {

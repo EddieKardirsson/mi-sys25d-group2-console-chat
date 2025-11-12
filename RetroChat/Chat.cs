@@ -15,29 +15,7 @@ public class Chat : IChat
         Console.WriteLine("Message stored");
         SaveMessagesToCache(chatId);
     }
-
-    public virtual void RetrieveMessagesFromCache(string chatId = DefaultChatId)
-    {
-        // TODO: Implement cache retrieval
-        EnsureDirectoryExists();
-        _chatFilePath = $"{DataFilePath}{chatId}.json";
-        if (File.Exists(_chatFilePath))
-        {
-            string json = File.ReadAllText(_chatFilePath);
-            try
-            {
-                Messages = JsonSerializer.Deserialize<List<Message>>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                })!;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Error retrieving messages from cache: {e.Message}");
-            }
-        }
-    }
-
+    
     private void SaveMessagesToCache(string chatId)
     {
         EnsureDirectoryExists();
@@ -58,6 +36,27 @@ public class Chat : IChat
         }
     }
 
+    public virtual void RetrieveMessagesFromCache(string chatId = DefaultChatId)
+    {
+        EnsureDirectoryExists();
+        _chatFilePath = $"{DataFilePath}{chatId}.json";
+        if (File.Exists(_chatFilePath))
+        {
+            string json = File.ReadAllText(_chatFilePath);
+            try
+            {
+                Messages = JsonSerializer.Deserialize<List<Message>>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                })!;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error retrieving messages from cache: {e.Message}");
+            }
+        }
+    }
+
     private static void EnsureDirectoryExists()
     {
         if (!Directory.Exists(DataFilePath)) Directory.CreateDirectory(DataFilePath);
@@ -65,7 +64,10 @@ public class Chat : IChat
 
     public virtual void DisplayMessages()
     {
-        // TODO: Implement message display
+        Messages.ForEach(message =>
+        {
+            Console.WriteLine($"\n{message?.User.Name} [{message?.TimeStamp}]: \n{message?.Text}");
+        });
     }
 
     public void DisplayChat()

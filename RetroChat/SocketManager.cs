@@ -23,6 +23,11 @@ public class SocketManager
             Path = Path
         });
         
+        // Just for testing purposes, remove later when fully implementing the chat.
+        ChatManager.Chat.RetrieveMessagesFromCache();
+        ChatManager.Chat.DisplayMessages();
+        // end of testing section.
+        
         HandleError();
         HandleReceivedMessage(GeneralChatEvent);
         HandleConnection();
@@ -45,6 +50,8 @@ public class SocketManager
             {
                 Message receivedMessage = response.GetValue<Message>();
                 _ = Message.ReceiveMessage(receivedMessage);
+                // Just for testing, remove it later when fully implementing the chat.
+                ChatManager.Chat.StoreMessage(receivedMessage);
             }
             catch (Exception e)
             {
@@ -87,7 +94,6 @@ public class SocketManager
         }
     }
     
-    // Get user joined event and display it on the screen.
     private static void HandleUserJoinedEvent(string eventName) => _client.On(eventName, response =>
     {
         string userJoined = response.GetValue<string>();

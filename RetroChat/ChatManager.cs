@@ -9,7 +9,7 @@ public class ChatManager
     private static List<User> _storedUsers = new List<User>();
     public static User? LoggedInUser { get; private set; }
     
-    private static readonly string DataFilePath = "./localData/";
+    public static readonly string DataFilePath = "./localData/";
     private static readonly string UserFilePath = DataFilePath + "users.json";
     
     #region StartUp

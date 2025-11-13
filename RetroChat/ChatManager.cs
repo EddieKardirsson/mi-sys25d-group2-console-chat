@@ -222,9 +222,83 @@ public class ChatManager
 
     public static async Task HandleUserMessage(User user, string eventName = SocketManager.GeneralChatEvent)
     {
+        Task displayTask = Task.Run(() => Chat!.DisplayChat());
+
+        await Task.Delay(500);
+
+        string inputBuffer = string.Empty;
+        
         while (true)
         {
             if (SocketManager.Client.Connected)
+            {
+                // Non-blocking input handling
+                if (Console.KeyAvailable)
+                {
+                    var key = Console.ReadKey(true);
+
+                    if (key.Key == ConsoleKey.Enter)
+                    {
+                        if (!string.IsNullOrEmpty(inputBuffer))
+                        {
+                            if (CheckForExitCommand(inputBuffer))
+                            {
+                                Chat!.StopDisplay();
+                                await SendLeaveJoinMessageEvent(user, SocketManager.UserLeftEvent);
+                                await DisconnectAndExit();
+                            }
+
+                            if (CheckForLeaveChatCommand(inputBuffer))
+                            {
+                                Chat!.StopDisplay();
+                                await SendLeaveJoinMessageEvent(user, SocketManager.UserLeftEvent);
+                                await SocketManager.Disconnect();
+                                break;
+                            }
+
+                            try
+                            {
+                                Message message = new Message(inputBuffer, user);
+                                await message.SendMessage(user, inputBuffer, eventName);
+                                Chat!.StoreMessage(message);
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine($"Error sending message: {e.Message}");
+                            }
+                            
+                            inputBuffer = string.Empty;
+                            Chat!.UpdateInput(inputBuffer);
+                        }
+                    }
+                    else if (key.Key == ConsoleKey.Backspace && inputBuffer.Length > 0)
+                    {
+                        inputBuffer = string.Empty;
+                        Chat!.UpdateInput(inputBuffer);
+                    }
+                    else if (!char.IsControl(key.KeyChar))
+                    {
+                        inputBuffer += key.KeyChar;
+                        Chat!.UpdateInput(inputBuffer);
+                    }
+                }
+
+                await Task.Delay(50);
+            }
+            else 
+            {
+                Chat!.StopDisplay();
+                await AttemptReconnectToServer();
+
+                if (SocketManager.Client.Connected)
+                {
+                    // Restart display after connection
+                    displayTask = Task.Run(() => Chat!.DisplayChat());
+                    await Task.Delay(500);
+                }
+            }
+            
+            /*if (SocketManager.Client.Connected)
             {
                 Console.Write("Enter your message: ");
                 string? input = Console.ReadLine();
@@ -250,8 +324,13 @@ public class ChatManager
                     Console.WriteLine($"Error sending message: {e.Message}");
                 }
             }
-            else await AttemptReconnectToServer();
+            else await AttemptReconnectToServer();*/
         }
+    }
+    
+    private static bool CheckForLeaveChatCommand(string input)
+    {
+        return SocketManager.LeaveChatCommands.Any(c => input.ToLower() == c);
     }
 
     private static bool CheckForExitCommand(string input)

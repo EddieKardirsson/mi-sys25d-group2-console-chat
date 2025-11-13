@@ -56,8 +56,7 @@ public class SocketManager
             {
                 Message receivedMessage = response.GetValue<Message>();
                 _ = Message.ReceiveMessage(receivedMessage);
-                // Just for testing, remove it later when fully implementing the chat.
-                ChatManager.Chat.StoreMessage(receivedMessage);
+                ChatManager.Chat!.StoreMessage(receivedMessage);
             }
             catch (Exception e)
             {

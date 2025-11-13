@@ -150,7 +150,7 @@ public class ChatManager
         Console.WriteLine(" Select chat room");
         Console.WriteLine("1.");
         Console.WriteLine("2.");
-        Console.WriteLine("R. Return nack to menu");
+        Console.WriteLine("R. Return back to menu");
         Console.Write("Select a chat room: ");
 
         char choice = char.ToLower(Console.ReadKey(true).KeyChar);

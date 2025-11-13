@@ -28,10 +28,7 @@ public class SocketManager
             Path = Path
         });
         
-        // Just for testing purposes, remove later when fully implementing the chat.
-        ChatManager.Chat.RetrieveMessagesFromCache();
-        ChatManager.Chat.DisplayMessages();
-        // end of testing section.
+        ChatManager.Chat!.RetrieveMessagesFromCache();
         
         HandleError();
         HandleReceivedMessage(eventName);
@@ -60,8 +57,7 @@ public class SocketManager
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error parsing message: {e.Message}");
-                Console.WriteLine($"Raw response: {response}");
+                // Silent error handling to not disrupt display
             }
         });
     }

@@ -16,14 +16,7 @@ public class Message
 
     public async Task SendMessage(User user, string inMessage, string eventName)
     {
-        string outMessage = $"\n{user.Name} [{TimeStamp}]: \n{inMessage}";
-
         await SocketManager.Client.EmitAsync(eventName, this);
-        
-        // Just for testing, to see the actual message sent on Postman, uncomment the following line:
-        // await SocketManager.Client.EmitAsync("message", outMessage);
-        Console.WriteLine(outMessage);
-        
     }
 
     public static async Task ReceiveMessage(Message message)
@@ -31,8 +24,9 @@ public class Message
 
         try
         {
-            string output = $"\n{message?.User.Name} [{message?.TimeStamp}]: \n{message?.Text}";
-            Console.WriteLine(output);
+            // Message will be displayed by DisplayChat
+            // Just handle errors here
+            if (message == null) throw new ArgumentNullException(nameof(message));
         }
         catch (Exception e)
         {

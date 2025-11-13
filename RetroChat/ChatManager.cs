@@ -23,7 +23,7 @@ public class ChatManager
         string username = PromptForUsername();
         
         User user = _storedUsers.Any(u => u.Name == username) ? LoadExistingUser(username) : CreateNewUser(username);
-        Chat = new Chat(user);
+        
         
         Console.WriteLine("Press any key to continue...");
         Console.ReadKey(false);
@@ -112,13 +112,16 @@ public class ChatManager
         {
             case '1':
                 Console.Clear();
+                Chat = new Chat(user);
                 await SocketManager.Connect();
                 await SendLeaveJoinMessageEvent(user, SocketManager.UserJoinedEvent);
                 await HandleUserMessage(user);
                 return false;
             case '2':
-                DisplayChatRoomMenu();
-                return false;
+                bool inChatRoomMenu = true;
+                while (inChatRoomMenu)
+                    inChatRoomMenu = await DisplayChatRoomMenu(user);
+                break;
 
             case '3':
                 Console.Clear();
@@ -140,49 +143,51 @@ public class ChatManager
     } 
 
 //ChatRoom submenu
-    private static void DisplayChatRoomMenu()
+    private static async Task<bool> DisplayChatRoomMenu(User user)
     {
 
-        bool showRoom = true;
+        Console.Clear();
+        Console.WriteLine(" Select chat room");
+        Console.WriteLine("1.");
+        Console.WriteLine("2.");
+        Console.WriteLine("R. Return nack to menu");
+        Console.Write("Select a chat room: ");
 
-        while (showRoom)
+        char choice = char.ToLower(Console.ReadKey(true).KeyChar);
+
+        switch (choice)
         {
-            Console.Clear();
-            Console.WriteLine(" Select chat room");
-            Console.WriteLine("1.");
-            Console.WriteLine("2.");
-            Console.WriteLine("R. Return nack to menu");
-            Console.Write("Select a chat room: ");
+            case '1':
+                await EnterChatRoom(SocketManager.Rooms[0], user);
+                return false;
 
-            char choice = char.ToLower(Console.ReadKey(true).KeyChar);
-
-            switch (choice)
-            {
-                case '1':
-                    EnterChatRoom("Room 1");
-                    break;
-
-                case '2':
-                    EnterChatRoom("Room 2");
-                    break;
+            case '2':
+                await EnterChatRoom(SocketManager.Rooms[1], user);
+                return false;
                 
-                case 'r':
-                    showRoom = false;
-                    break;
+            case 'r':
+                return false;
 
-                default:
-                    Console.WriteLine("Invalid input/choice. Try again.");
-                    Thread.Sleep(1000);
-                    break;
-            }
+            default:
+                Console.WriteLine("Invalid input/choice. Try again.");
+                Thread.Sleep(1000);
+                break;
         }
+
+        return true;
     }
 
-    private static void EnterChatRoom(string roomName)
+    private static async Task EnterChatRoom(string roomName, User user)
     {
         Console.Clear();
-        Console.WriteLine($"You are in room {roomName}");
-        Console.WriteLine("Press 'B' to go back to choose room");
+        Console.WriteLine($"You are in room {roomName}\n");
+        
+        Chat = new Chat(user, roomName);
+        await SocketManager.Connect();
+        await SendLeaveJoinMessageEvent(user, SocketManager.UserJoinedEvent);
+        await HandleUserMessage(user, roomName);
+        
+        /*Console.WriteLine("Press 'B' to go back to choose room");
 
         bool inRoom = true;
         
@@ -193,7 +198,8 @@ public class ChatManager
             {
                 inRoom = false;
             }
-        }
+            
+        }*/
     }
 
     private static bool WaitForReturnToMenu()

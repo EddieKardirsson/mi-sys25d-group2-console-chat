@@ -16,6 +16,8 @@ public class SocketManager
     public const string GeneralChatEvent = "/general";
     public const string UserJoinedEvent = "/userJoined";
     public const string UserLeftEvent = "/userLeft";
+    public static List<string> Rooms = ["Room 1", "Room 2"];
+
     public static readonly List<string> ExitCommands = ["/quit", "/exit"];
     public static readonly List<string> LeaveChatCommands = ["/l", "/lc", "/leave"];
 

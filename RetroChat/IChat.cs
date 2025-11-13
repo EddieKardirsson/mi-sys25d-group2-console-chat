@@ -4,7 +4,7 @@ public interface IChat
 {
     List<Message> Messages { get; }
     
-    void StoreMessage(Message message, string chatId = "general");
+    void StoreMessage(Message message);
     void DisplayMessages();
     void DisplayChat();
 }

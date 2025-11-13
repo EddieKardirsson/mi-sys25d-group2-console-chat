@@ -9,8 +9,8 @@ public class ChatManager
     private static List<User> _storedUsers = new List<User>();
     public static User? LoggedInUser { get; private set; }
     
-    public static Chat Chat { get; } = new Chat();
-    
+    public static Chat? Chat { get; private set; }
+
     public static readonly string DataFilePath = "./localData/";
     private static readonly string UserFilePath = DataFilePath + "users.json";
     
@@ -23,6 +23,7 @@ public class ChatManager
         string username = PromptForUsername();
         
         User user = _storedUsers.Any(u => u.Name == username) ? LoadExistingUser(username) : CreateNewUser(username);
+        Chat = new Chat(user);
         
         Console.WriteLine("Press any key to continue...");
         Console.ReadKey(false);
@@ -275,7 +276,9 @@ public class ChatManager
 
     public static async Task SendLeaveJoinMessageEvent(User? user, string eventName)
     {
-        if (user != null && SocketManager.Client.Connected)
+        if(user == null) return;
+        
+        if (SocketManager.Client != null && SocketManager.Client.Connected)
         {
             await SocketManager.Client.EmitAsync(eventName, user.Name);
         }
@@ -286,8 +289,11 @@ public class ChatManager
     public static async Task DisconnectAndExit()
     {
         LoggedInUser = null;
-        Console.WriteLine("Disposing client...");
-        await SocketManager.Disconnect();
+        if (SocketManager.Client != null)
+        {
+            Console.WriteLine("Disposing client...");
+            await SocketManager.Disconnect();
+        }
         Environment.Exit(0);
     }
 }

@@ -9,7 +9,9 @@ public class ChatManager
     private static List<User> _storedUsers = new List<User>();
     public static User? LoggedInUser { get; private set; }
     
-    private static readonly string DataFilePath = "./localData/";
+    public static Chat Chat { get; } = new Chat();
+    
+    public static readonly string DataFilePath = "./localData/";
     private static readonly string UserFilePath = DataFilePath + "users.json";
     
     #region StartUp
@@ -92,55 +94,48 @@ public class ChatManager
     #region Main Menu
    
     // TODO: Implement menu display and navigation methods here. 
-    public static void DisplayMenu()
+    public static async Task<bool> DisplayMenu(User user)
     {
-        bool showMainMenu = true;
 
-        while (showMainMenu)
+        Console.Clear();
+        Console.WriteLine("Menu");
+        Console.WriteLine("1. Send message");
+        Console.WriteLine("2. Select chat room");
+        Console.WriteLine("3 Send private message");
+        Console.WriteLine("Q. Exit");
+        Console.Write("Enter your choice: ");
+
+        char choice = Char.ToLower(Console.ReadKey(true).KeyChar);
+
+        switch (choice)
         {
-            Console.Clear();
-            Console.WriteLine("Menu");
-            Console.WriteLine("1. Send message");
-            Console.WriteLine("2. Select chat room");
-            Console.WriteLine("3 Send private message");
-            Console.WriteLine("Q. Exit");
-            Console.Write("Enter your choice: ");
+            case '1':
+                Console.Clear();
+                await SocketManager.Connect();
+                await SendLeaveJoinMessageEvent(user, SocketManager.UserJoinedEvent);
+                await HandleUserMessage(user);
+                return false;
+            case '2':
+                DisplayChatRoomMenu();
+                return false;
 
-            char choice = Char.ToLower(Console.ReadKey(true).KeyChar);
+            case '3':
+                Console.Clear();
+                Console.WriteLine("Send DM");
+                return false;
 
-            switch (choice)
-            {
-                case '1':
-                    Console.Clear();
-                    Console.WriteLine("Entering General Chat..."); 
-                    // Något för att kunna komma in i Genereal chat
-                    WaitForReturnTomenu();
-                    break;
+            case 'Q':
+            case 'q':
+                await SendLeaveJoinMessageEvent(user, SocketManager.UserLeftEvent);
+                await DisconnectAndExit();
+                return false; 
 
-
-                case '2':
-                    DisplayChatRoomMenu();
-                    break;
-
-                case '3':
-                    Console.Clear();
-                    Console.WriteLine("Send DM");
-                    WaitForReturnTomenu();
-                    break;
-
-                case 'q':
-                    Console.WriteLine("Exiting application...");
-                    showMainMenu = false;
-                    break; 
-
-                default:
-                    Console.WriteLine("Invalid input/choice. Try again.");
-                    Thread.Sleep(1000);
-                    break;
-
-
-            }
+            default:
+                Console.WriteLine("Invalid input/choice. Try again.");
+                Thread.Sleep(1000);
+                break;
         }
+        return true;
     } 
 
 //ChatRoom submenu
@@ -200,14 +195,17 @@ public class ChatManager
         }
     }
 
-    private static void WaitForReturnTomenu()
+    private static bool WaitForReturnToMenu()
     {
-        Console.WriteLine("\nPress 'M' to return to Main Menu");
+        Console.WriteLine("\nPress 'M' to return to Main Menu or any key to continue");
         while (true)
         {
             char key = char.ToLower(Console.ReadKey(true).KeyChar);
             if (key == 'm')
-                break;
+            {
+                return true;
+            }
+            return false;
         }
     }
     
@@ -215,7 +213,7 @@ public class ChatManager
     
     #region Handle Messages
 
-    public static async Task HandleUserMessage(User user)
+    public static async Task HandleUserMessage(User user, string eventName = SocketManager.GeneralChatEvent)
     {
         while (true)
         {
@@ -226,12 +224,19 @@ public class ChatManager
                 
                 if(string.IsNullOrEmpty(input)) continue;
 
-                if (input.ToLower() == "/quit" || input.ToLower() == "/exit") Environment.Exit(0);
+                if (CheckForExitCommand(input))
+                {
+                    await SendLeaveJoinMessageEvent(user, SocketManager.UserLeftEvent);
+                    await DisconnectAndExit();
+                }
 
                 try
                 {
                     Message message = new Message(input, user);
-                    await message.SendMessage(user, input, SocketManager.GeneralChatEvent);
+                    await message.SendMessage(user, input, eventName);
+                    
+                    // Just for testing, remove it later when fully implementing the chat.
+                    Chat.StoreMessage(message);
                 }
                 catch (Exception e)
                 {
@@ -241,7 +246,18 @@ public class ChatManager
             else await AttemptReconnectToServer();
         }
     }
+
+    private static bool CheckForExitCommand(string input)
+        {
+            bool bIsExitCommand = false;
+            SocketManager.ExitCommands.ForEach(c =>
+            {
+                 if(input.ToLower() == c) bIsExitCommand = true;               
+            });
+            return bIsExitCommand;
+        }
     
+
     private static async Task AttemptReconnectToServer()
     {
         Console.WriteLine("Not connected to the server. Attempting to reconnect...");
@@ -257,13 +273,21 @@ public class ChatManager
         }
     }
 
-    public static async Task SendJoinMessageEvent(User? user)
+    public static async Task SendLeaveJoinMessageEvent(User? user, string eventName)
     {
         if (user != null && SocketManager.Client.Connected)
         {
-            await SocketManager.Client.EmitAsync(SocketManager.UserJoinedEvent, user.Name);
+            await SocketManager.Client.EmitAsync(eventName, user.Name);
         }
     }
     
     #endregion
+    
+    public static async Task DisconnectAndExit()
+    {
+        LoggedInUser = null;
+        Console.WriteLine("Disposing client...");
+        await SocketManager.Disconnect();
+        Environment.Exit(0);
+    }
 }

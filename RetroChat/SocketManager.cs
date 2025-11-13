@@ -4,30 +4,39 @@ using SocketIOClient;
 
 public class SocketManager
 {
-    private static SocketIO _client;
+    private static SocketIO _client = null!;
     private static bool _isConnected = false;
     
     public static bool IsConnected => _isConnected;
     public static SocketIO Client => _client;
 
-    public const string GeneralChatEvent = "/general";
-    public const string UserJoinedEvent = "/userJoined";
-    
     private const string Uri = "wss://api.leetcode.se";
     private const string Path = "/sys25d";
+    
+    public const string GeneralChatEvent = "/general";
+    public const string UserJoinedEvent = "/userJoined";
+    public const string UserLeftEvent = "/userLeft";
+    public static readonly List<string> ExitCommands = ["/quit", "/exit"];
+    public static readonly List<string> LeaveChatCommands = ["/l", "/lc", "/leave"];
 
-    public static async Task Connect()
+    public static async Task Connect(string eventName = GeneralChatEvent)
     {
         _client = new SocketIO(Uri, new SocketIOOptions
         {
             Path = Path
         });
         
+        // Just for testing purposes, remove later when fully implementing the chat.
+        ChatManager.Chat.RetrieveMessagesFromCache();
+        ChatManager.Chat.DisplayMessages();
+        // end of testing section.
+        
         HandleError();
-        HandleReceivedMessage(GeneralChatEvent);
+        HandleReceivedMessage(eventName);
         HandleConnection();
         HandleDisconnection();
         HandleUserJoinedEvent(UserJoinedEvent);
+        HandleUserLeftEvent(UserLeftEvent);
         
         await EstablishConnectionAsync();
         
@@ -43,8 +52,10 @@ public class SocketManager
             Console.WriteLine($"Received message event {eventName}: ");
             try
             {
-                string receivedMessage = response.GetValue<string>();
+                Message receivedMessage = response.GetValue<Message>();
                 _ = Message.ReceiveMessage(receivedMessage);
+                // Just for testing, remove it later when fully implementing the chat.
+                ChatManager.Chat.StoreMessage(receivedMessage);
             }
             catch (Exception e)
             {
@@ -87,10 +98,22 @@ public class SocketManager
         }
     }
     
-    // Get user joined event and display it on the screen.
     private static void HandleUserJoinedEvent(string eventName) => _client.On(eventName, response =>
     {
         string userJoined = response.GetValue<string>();
         Console.WriteLine($"User {userJoined} joined the chat.");
     });
+
+    private static void HandleUserLeftEvent(string eventName) => _client.On(eventName, response =>
+    {
+        string userLeft = response.GetValue<string>();
+        Console.WriteLine($"User {userLeft} left the chat.");
+    });
+    
+    public static Task Disconnect()
+    {
+        Console.WriteLine("Disconnecting from server...");
+        _client.Dispose();
+        return Task.CompletedTask;
+    }
 }

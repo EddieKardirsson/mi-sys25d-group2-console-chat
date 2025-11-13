@@ -1,4 +1,4 @@
-﻿namespace RetroChat;
+namespace RetroChat;
 
 class Program
 {
@@ -13,9 +13,11 @@ class Program
         // TODO: DisplayMenu
      
         await SocketManager.Connect();
-
-        await ChatManager.SendJoinMessageEvent(user);
         
-        await ChatManager.HandleUserMessage(user);
+        bool showMenu = true;
+        while (showMenu)
+        {
+            showMenu = await ChatManager.DisplayMenu(user);
+        }
     }
 }

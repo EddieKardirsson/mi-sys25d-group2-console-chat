@@ -11,8 +11,6 @@ class Program
         Console.WriteLine($"Connected as {user.Name}");
         
         // TODO: DisplayMenu
-     
-        await SocketManager.Connect();
         
         bool showMenu = true;
         while (showMenu)

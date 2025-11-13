@@ -16,6 +16,8 @@ public class SocketManager
     public const string GeneralChatEvent = "/general";
     public const string UserJoinedEvent = "/userJoined";
     public const string UserLeftEvent = "/userLeft";
+    public static List<string> Rooms = ["Room 1", "Room 2"];
+
     public static readonly List<string> ExitCommands = ["/quit", "/exit"];
     public static readonly List<string> LeaveChatCommands = ["/l", "/lc", "/leave"];
 
@@ -54,8 +56,7 @@ public class SocketManager
             {
                 Message receivedMessage = response.GetValue<Message>();
                 _ = Message.ReceiveMessage(receivedMessage);
-                // Just for testing, remove it later when fully implementing the chat.
-                ChatManager.Chat.StoreMessage(receivedMessage);
+                ChatManager.Chat!.StoreMessage(receivedMessage);
             }
             catch (Exception e)
             {

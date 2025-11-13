@@ -5,22 +5,30 @@ namespace RetroChat;
 public class Chat : IChat
 {
     public List<Message> Messages { get; private set; } = new List<Message>();
-    private static readonly string DataFilePath = $"{ChatManager.DataFilePath}chats/";
+    private static string? _dataFilePath;
     private static string? _chatFilePath;
     public const string DefaultChatId = "general";
     
-    public virtual void StoreMessage(Message message, string chatId = DefaultChatId)
+    public string ChatId { get; set; } = DefaultChatId;
+
+    public Chat(User user, string chatEventName = DefaultChatId)
+    {
+        ChatId = chatEventName;
+        _dataFilePath = $"{ChatManager.DataFilePath}{user.Name}/chats/";
+    }
+    
+    public virtual void StoreMessage(Message message)
     {
         Messages.Add(message);
         Console.WriteLine("Message stored");
-        SaveMessagesToCache(chatId);
+        SaveMessagesToCache();
     }
     
-    private void SaveMessagesToCache(string chatId)
+    private void SaveMessagesToCache()
     {
         EnsureDirectoryExists();
         
-        _chatFilePath = $"{DataFilePath}{chatId}.json";
+        _chatFilePath = $"{_dataFilePath}{ChatId}.json";
         try
         {
             string json = JsonSerializer.Serialize(Messages, new JsonSerializerOptions
@@ -36,10 +44,10 @@ public class Chat : IChat
         }
     }
 
-    public virtual void RetrieveMessagesFromCache(string chatId = DefaultChatId)
+    public virtual void RetrieveMessagesFromCache()
     {
         EnsureDirectoryExists();
-        _chatFilePath = $"{DataFilePath}{chatId}.json";
+        _chatFilePath = $"{_dataFilePath}{ChatId}.json";
         if (File.Exists(_chatFilePath))
         {
             string json = File.ReadAllText(_chatFilePath);
@@ -59,7 +67,7 @@ public class Chat : IChat
 
     private static void EnsureDirectoryExists()
     {
-        if (!Directory.Exists(DataFilePath)) Directory.CreateDirectory(DataFilePath);
+        if (!Directory.Exists(_dataFilePath)) Directory.CreateDirectory(_dataFilePath);
     }
 
     public virtual void DisplayMessages()

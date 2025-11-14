@@ -210,78 +210,27 @@ public class ChatManager
     {
         string inputBuffer = string.Empty;
         int lastMessageCount = Chat!.Messages.Count;
-
-        // Initial display
-        Chat!.UpdateInput(inputBuffer);
-        Chat!.DisplayChat();
+        
+        Chat.UpdateInput(inputBuffer);
+        Chat.DisplayChat();
 
         while (true)
         {
             if (SocketManager.Client.Connected)
             {
-                // Check if we need to refresh the display (new message arrived or input changed)
                 bool needsRefresh = false;
-
-                // Non-blocking input handling
+                
                 if (Console.KeyAvailable)
                 {
-                    var key = Console.ReadKey(intercept: true);
-
-                    if (key.Key == ConsoleKey.Enter)
-                    {
-                        if (!string.IsNullOrEmpty(inputBuffer))
-                        {
-                            if (CheckForExitCommand(inputBuffer))
-                            {
-                                await SendLeaveJoinMessageEvent(user, SocketManager.UserLeftEvent);
-                                await DisconnectAndExit();
-                            }
-
-                            if (CheckForLeaveChatCommand(inputBuffer))
-                            {
-                                await SendLeaveJoinMessageEvent(user, SocketManager.UserLeftEvent);
-                                await SocketManager.Disconnect();
-                                break;
-                            }
-
-                            try
-                            {
-                                Message message = new Message(inputBuffer, user);
-                                await message.SendMessage(user, inputBuffer, eventName);
-                                Chat!.StoreMessage(message);
-                            }
-                            catch (Exception e)
-                            {
-                                // Log error but don't break the flow
-                            }
-
-                            inputBuffer = string.Empty;
-                            Chat!.UpdateInput(inputBuffer);
-                            needsRefresh = true;
-                        }
-                    }
-                    else if (key.Key == ConsoleKey.Backspace && inputBuffer.Length > 0)
-                    {
-                        inputBuffer = inputBuffer[..^1];
-                        Chat!.UpdateInput(inputBuffer);
-                        needsRefresh = true;
-                    }
-                    else if (!char.IsControl(key.KeyChar))
-                    {
-                        inputBuffer += key.KeyChar;
-                        Chat!.UpdateInput(inputBuffer);
-                        needsRefresh = true;
-                    }
+                    (inputBuffer, needsRefresh) = await HandleUserInput(user, eventName, inputBuffer, needsRefresh);
                 }
-
-                // Check if new messages arrived
+                
                 if (Chat!.Messages.Count != lastMessageCount)
                 {
                     lastMessageCount = Chat!.Messages.Count;
                     needsRefresh = true;
                 }
-
-                // Refresh display if needed
+                
                 if (needsRefresh)
                 {
                     Chat!.DisplayChat();
@@ -295,13 +244,66 @@ public class ChatManager
 
                 if (SocketManager.Client.Connected)
                 {
-                    // Redisplay after reconnection
                     Chat!.DisplayChat();
                 }
             }
         }
     }
-    
+
+    private static async Task<(string inputBuffer, bool needsRefresh)> 
+        HandleUserInput(User user, string eventName, string inputBuffer, bool needsRefresh)
+    {
+        var key = Console.ReadKey(intercept: true);
+
+        if (key.Key == ConsoleKey.Enter)
+        {
+            if (!string.IsNullOrEmpty(inputBuffer))
+            {
+                if (CheckForExitCommand(inputBuffer))
+                {
+                    await SendLeaveJoinMessageEvent(user, SocketManager.UserLeftEvent);
+                    await DisconnectAndExit();
+                }
+
+                if (CheckForLeaveChatCommand(inputBuffer))
+                {
+                    await SendLeaveJoinMessageEvent(user, SocketManager.UserLeftEvent);
+                    await SocketManager.Disconnect();
+                    return (inputBuffer, needsRefresh);
+                }
+
+                try
+                {
+                    Message message = new Message(inputBuffer, user);
+                    await message.SendMessage(user, inputBuffer, eventName);
+                    Chat!.StoreMessage(message);
+                }
+                catch (Exception e)
+                {
+                    // Silent error handling to not disrupt display, needs to be empty
+                }
+
+                inputBuffer = string.Empty;
+                Chat!.UpdateInput(inputBuffer);
+                needsRefresh = true;
+            }
+        }
+        else if (key.Key == ConsoleKey.Backspace && inputBuffer.Length > 0)
+        {
+            inputBuffer = inputBuffer[..^1];
+            Chat!.UpdateInput(inputBuffer);
+            needsRefresh = true;
+        }
+        else if (!char.IsControl(key.KeyChar))
+        {
+            inputBuffer += key.KeyChar;
+            Chat!.UpdateInput(inputBuffer);
+            needsRefresh = true;
+        }
+
+        return (inputBuffer, needsRefresh);
+    }
+
     private static bool CheckForLeaveChatCommand(string input)
     {
         return SocketManager.LeaveChatCommands.Any(c => input.ToLower() == c);

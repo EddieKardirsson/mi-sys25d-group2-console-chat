@@ -83,7 +83,6 @@ public class Chat : IChat
 
     public void DisplayChat()
     {
-        // This will be called repeatedly to refresh the display
         AnsiConsole.Clear();
 
         var layout = new Layout("Root")
@@ -92,29 +91,39 @@ public class Chat : IChat
                 new Layout("Messages"),
                 new Layout("Input").Size(3)
             );
+        
+        UpdateHeaderPanel(layout);
+        UpdateMessagesPanel(layout);
+        UpdateInputPanel(layout);
 
-        // Update header
+        AnsiConsole.Write(layout);
+    }
+
+    private void UpdateHeaderPanel(Layout layout)
+    {
         layout["Header"].Update(
             new Panel(new Markup($"[bold cyan]RetroChat - {Markup.Escape(ChatId)}[/]"))
                 .Border(BoxBorder.Double)
                 .BorderColor(Color.Cyan)
                 .Expand());
+    }
 
-        // Update messages
+    private void UpdateMessagesPanel(Layout layout)
+    {
         layout["Messages"].Update(
             new Panel(RenderMessages())
                 .Border(BoxBorder.Square)
                 .BorderColor(Color.Cyan)
                 .Expand());
+    }
 
-        // Update input area
+    private void UpdateInputPanel(Layout layout)
+    {
         layout["Input"].Update(
             new Panel(new Markup($"[bold yellow]You:[/] {Markup.Escape(_currentInput)}[blink]|[/]"))
                 .Border(BoxBorder.Double)
                 .BorderColor(Color.Green)
                 .Expand());
-
-        AnsiConsole.Write(layout);
     }
 
     private Markup RenderMessages()
@@ -126,22 +135,24 @@ public class Chat : IChat
 
         List<string> lines = new List<string>();
 
-        messagesToShow.ForEach(msg =>
-        {
-            string timestamp = msg.TimeStamp.ToString("yyyy-MM-dd HH:mm:ss");
-            string username = Markup.Escape(msg.User.Name);
-            string message = Markup.Escape(msg.Text);
-
-            // Escape the square brackets in timestamp display
-            lines.Add($"[bold cyan]{username}[/] [dim][[{timestamp}]][/]:");
-            lines.Add($"{message}");
-            lines.Add(""); // Empty line between messages
-        });
+        GenerateMessageLines(messagesToShow, lines);
 
         if (lines.Count > 0 && lines[^1] == "")
             lines.RemoveAt(lines.Count - 1);
 
         return new Markup(string.Join("\n", lines));
+    }
+
+    private static void GenerateMessageLines(List<Message> messagesToShow, List<string> lines)
+    {
+        messagesToShow.ForEach(msg =>
+        {
+            string timestamp = msg.TimeStamp.ToString("yyyy-MM-dd HH:mm:ss");
+            string username = Markup.Escape(msg.User.Name);
+            string message = Markup.Escape(msg.Text);
+            
+            lines.Add($"[bold cyan]{username}[/] [dim][[{timestamp}]][/]:\n{message}\n");
+        });
     }
 
     public void UpdateInput(string input) => _currentInput = input;

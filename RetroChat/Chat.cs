@@ -12,7 +12,7 @@ public class Chat : IChat
 
     public string ChatId { get; set; } = DefaultChatId;
 
-    private const int MaxDisplayMessages = 15;
+    private const int MaxDisplayMessages = 10;
     private string _currentInput = string.Empty;
 
     public Chat(User user, string chatEventName = DefaultChatId)
@@ -24,7 +24,8 @@ public class Chat : IChat
     public virtual void StoreMessage(Message message)
     {
         Messages.Add(message);
-        SaveMessagesToCache();
+        if(message.IsSystemMessage == false)
+            SaveMessagesToCache();
     }
 
     private void SaveMessagesToCache()

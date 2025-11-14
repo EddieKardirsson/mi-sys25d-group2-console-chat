@@ -109,13 +109,17 @@ public class SocketManager
     private static void HandleUserJoinedEvent(string eventName) => _client.On(eventName, response =>
     {
         string userJoined = response.GetValue<string>();
-        // Don't print here - it disrupts the display
+        
+        Message systemMessage = Message.CreateSystemMessage($"{userJoined} joined the chat.");
+        ChatManager.Chat?.StoreMessage(systemMessage);
     });
 
     private static void HandleUserLeftEvent(string eventName) => _client.On(eventName, response =>
     {
         string userLeft = response.GetValue<string>();
-        // Don't print here - it disrupts the display
+        
+        Message systemMessage = Message.CreateSystemMessage($"{userLeft} left the chat.");
+        ChatManager.Chat?.StoreMessage(systemMessage);
     });
 
     public static async Task Disconnect()

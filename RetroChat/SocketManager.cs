@@ -6,7 +6,7 @@ public class SocketManager
 {
     private static SocketIO _client = null!;
     private static bool _isConnected = false;
-    private static string? _currentEventName = null; // Track current event
+    private static string? _currentEventName = null;
 
     public static bool IsConnected => _isConnected;
     public static SocketIO Client => _client;
@@ -47,7 +47,7 @@ public class SocketManager
         ChatManager.Chat!.RetrieveMessagesFromCache();
 
         HandleError();
-        HandleReceivedMessage(eventName); // Only listen to THIS event
+        HandleReceivedMessage(eventName); // Only listen to THIS specific event
         HandleConnection();
         HandleDisconnection();
         HandleUserJoinedEvent(UserJoinedEvent);
@@ -61,16 +61,19 @@ public class SocketManager
 
     private static void HandleReceivedMessage(string eventName)
     {
-        // Remove any previous handlers for this event to avoid duplicates
-        _client.Off(eventName);
-
+        // IMPORTANT: Only listen to the specific event for this room/channel
         _client.On(eventName, response =>
         {
             try
             {
                 Message receivedMessage = response.GetValue<Message>();
-                _ = Message.ReceiveMessage(receivedMessage);
-                ChatManager.Chat!.StoreMessage(receivedMessage);
+
+                // Only process if we're still listening to this event
+                if (_currentEventName == eventName)
+                {
+                    _ = Message.ReceiveMessage(receivedMessage);
+                    ChatManager.Chat!.StoreMessage(receivedMessage);
+                }
             }
             catch (Exception e)
             {
@@ -80,18 +83,13 @@ public class SocketManager
     }
 
     private static void HandleConnection() =>
-        _client.OnConnected += (sender, eventArgs) =>
-        {
-            _isConnected = true;
-            Console.WriteLine("Connected to server");
-        };
+        _client.OnConnected += (sender, eventArgs) => { _isConnected = true; };
 
     private static void HandleDisconnection() =>
         _client.OnDisconnected += (sender, eventArgs) =>
         {
             _isConnected = false;
             _currentEventName = null;
-            Console.WriteLine("Disconnected from server");
         };
 
     private static async Task EstablishConnectionAsync()
@@ -99,12 +97,7 @@ public class SocketManager
         try
         {
             await _client.ConnectAsync();
-
             await Task.Delay(1000);
-
-            if (!_isConnected) Console.WriteLine("Not connected to server.");
-
-            Console.WriteLine($"Connected status: {_isConnected}");
         }
         catch (Exception e)
         {
@@ -116,32 +109,31 @@ public class SocketManager
     private static void HandleUserJoinedEvent(string eventName) => _client.On(eventName, response =>
     {
         string userJoined = response.GetValue<string>();
-        Console.WriteLine($"User {userJoined} joined the chat.");
+        // Don't print here - it disrupts the display
     });
 
     private static void HandleUserLeftEvent(string eventName) => _client.On(eventName, response =>
     {
         string userLeft = response.GetValue<string>();
-        Console.WriteLine($"User {userLeft} left the chat.");
+        // Don't print here - it disrupts the display
     });
 
     public static async Task Disconnect()
     {
-        Console.WriteLine("Disconnecting from server...");
-
-        if (_client != null)
+        if (_client != null && _isConnected)
         {
-            // Remove all event listeners
-            if (_currentEventName != null)
+            try
             {
-                _client.Off(_currentEventName);
+                await _client.DisconnectAsync();
             }
-
-            _client.Off(UserJoinedEvent);
-            _client.Off(UserLeftEvent);
-
-            await _client.DisconnectAsync();
-            _client.Dispose();
+            catch
+            {
+                // Ignore disconnect errors
+            }
+            finally
+            {
+                _client?.Dispose();
+            }
         }
 
         _isConnected = false;

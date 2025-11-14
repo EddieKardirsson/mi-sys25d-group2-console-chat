@@ -182,18 +182,16 @@ public class ChatManager
         Console.Clear();
         Console.WriteLine($"You are in room {roomName}\n");
     
-        // Convert room name to event name format (e.g., "Room 1" -> "/room1")
         string eventName = ConvertRoomNameToEvent(roomName);
     
         Chat = new Chat(user, roomName);
-        await SocketManager.Connect(eventName); // Use the event name, not room name
+        await SocketManager.Connect(eventName); 
         await SendLeaveJoinMessageEvent(user, SocketManager.UserJoinedEvent, eventName);
-        await HandleUserMessage(user, eventName); // Pass event name here too
+        await HandleUserMessage(user, eventName); 
     }
     
     private static string ConvertRoomNameToEvent(string roomName)
     {
-        // Convert "Room 1" to "/room1", "Room 2" to "/room2", etc.
         return "/" + roomName.ToLower().Replace(" ", "");
     }
 

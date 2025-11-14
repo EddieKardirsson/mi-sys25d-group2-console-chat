@@ -24,14 +24,12 @@ public class SocketManager
 
     public static async Task Connect(string eventName = GeneralChatEvent)
     {
-        // If already connected to the same event, don't reconnect
         if (_isConnected && _currentEventName == eventName)
         {
             ChatManager.Chat!.RetrieveMessagesFromCache();
             return;
         }
-
-        // If connected to a different event, disconnect first
+        
         if (_isConnected && _currentEventName != eventName)
         {
             await Disconnect();
@@ -50,8 +48,7 @@ public class SocketManager
         HandleReceivedMessage(eventName);
         HandleConnection();
         HandleDisconnection();
-    
-        // Listen for room-specific join/leave events
+        
         HandleUserJoinedEvent(UserJoinedEvent + eventName);
         HandleUserLeftEvent(UserLeftEvent + eventName);
 
@@ -63,14 +60,12 @@ public class SocketManager
 
     private static void HandleReceivedMessage(string eventName)
     {
-        // IMPORTANT: Only listen to the specific event for this room/channel
         _client.On(eventName, response =>
         {
             try
             {
                 Message receivedMessage = response.GetValue<Message>();
-
-                // Only process if we're still listening to this event
+                
                 if (_currentEventName == eventName)
                 {
                     _ = Message.ReceiveMessage(receivedMessage);

@@ -6,13 +6,14 @@ public class SocketManager
 {
     private static SocketIO _client = null!;
     private static bool _isConnected = false;
-    
+    private static string? _currentEventName = null; // Track current event
+
     public static bool IsConnected => _isConnected;
     public static SocketIO Client => _client;
 
     private const string Uri = "wss://api.leetcode.se";
     private const string Path = "/sys25d";
-    
+
     public const string GeneralChatEvent = "/general";
     public const string UserJoinedEvent = "/userJoined";
     public const string UserLeftEvent = "/userLeft";
@@ -23,32 +24,48 @@ public class SocketManager
 
     public static async Task Connect(string eventName = GeneralChatEvent)
     {
+        // If already connected to the same event, don't reconnect
+        if (_isConnected && _currentEventName == eventName)
+        {
+            ChatManager.Chat!.RetrieveMessagesFromCache();
+            return;
+        }
+
+        // If connected to a different event, disconnect first
+        if (_isConnected && _currentEventName != eventName)
+        {
+            await Disconnect();
+        }
+
         _client = new SocketIO(Uri, new SocketIOOptions
         {
             Path = Path
         });
-        
+
+        _currentEventName = eventName;
+
         ChatManager.Chat!.RetrieveMessagesFromCache();
-        
+
         HandleError();
-        HandleReceivedMessage(eventName);
+        HandleReceivedMessage(eventName); // Only listen to THIS event
         HandleConnection();
         HandleDisconnection();
         HandleUserJoinedEvent(UserJoinedEvent);
         HandleUserLeftEvent(UserLeftEvent);
-        
+
         await EstablishConnectionAsync();
-        
     }
-    
+
     private static void HandleError() =>
         _client.OnError += (sender, error) => Console.WriteLine(error);
 
     private static void HandleReceivedMessage(string eventName)
     {
+        // Remove any previous handlers for this event to avoid duplicates
+        _client.Off(eventName);
+
         _client.On(eventName, response =>
         {
-            Console.WriteLine($"Received message event {eventName}: ");
             try
             {
                 Message receivedMessage = response.GetValue<Message>();
@@ -61,7 +78,7 @@ public class SocketManager
             }
         });
     }
-    
+
     private static void HandleConnection() =>
         _client.OnConnected += (sender, eventArgs) =>
         {
@@ -73,6 +90,7 @@ public class SocketManager
         _client.OnDisconnected += (sender, eventArgs) =>
         {
             _isConnected = false;
+            _currentEventName = null;
             Console.WriteLine("Disconnected from server");
         };
 
@@ -81,11 +99,11 @@ public class SocketManager
         try
         {
             await _client.ConnectAsync();
-            
+
             await Task.Delay(1000);
-            
-            if(!_isConnected) Console.WriteLine("Not connected to server.");
-            
+
+            if (!_isConnected) Console.WriteLine("Not connected to server.");
+
             Console.WriteLine($"Connected status: {_isConnected}");
         }
         catch (Exception e)
@@ -94,7 +112,7 @@ public class SocketManager
             throw;
         }
     }
-    
+
     private static void HandleUserJoinedEvent(string eventName) => _client.On(eventName, response =>
     {
         string userJoined = response.GetValue<string>();
@@ -106,11 +124,27 @@ public class SocketManager
         string userLeft = response.GetValue<string>();
         Console.WriteLine($"User {userLeft} left the chat.");
     });
-    
-    public static Task Disconnect()
+
+    public static async Task Disconnect()
     {
         Console.WriteLine("Disconnecting from server...");
-        _client.Dispose();
-        return Task.CompletedTask;
+
+        if (_client != null)
+        {
+            // Remove all event listeners
+            if (_currentEventName != null)
+            {
+                _client.Off(_currentEventName);
+            }
+
+            _client.Off(UserJoinedEvent);
+            _client.Off(UserLeftEvent);
+
+            await _client.DisconnectAsync();
+            _client.Dispose();
+        }
+
+        _isConnected = false;
+        _currentEventName = null;
     }
 }

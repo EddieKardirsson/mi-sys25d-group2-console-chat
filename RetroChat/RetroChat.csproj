@@ -9,6 +9,7 @@
 
     <ItemGroup>
       <PackageReference Include="SocketIOClient" Version="3.1.2" />
+      <PackageReference Include="Spectre.Console" Version="0.54.0" />
     </ItemGroup>    
 
 </Project>

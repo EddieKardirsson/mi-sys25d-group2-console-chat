@@ -6,12 +6,21 @@ public class Message
     public string Text { get; set; }
     public User User { get; set; }
     public DateTime TimeStamp { get; set; }
+    public bool IsSystemMessage { get; set; } = false;
 
     public Message(string text, User user)
     {
         Text = text;
         User = user;
         TimeStamp = DateTime.Now;
+    }
+    
+    public static Message CreateSystemMessage(string text)
+    {
+        return new Message(text, new User("System"))
+        {
+            IsSystemMessage = true
+        };
     }
 
     public async Task SendMessage(User user, string inMessage, string eventName)

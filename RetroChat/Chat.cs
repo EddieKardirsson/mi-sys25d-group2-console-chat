@@ -150,8 +150,12 @@ public class Chat : IChat
             string timestamp = msg.TimeStamp.ToString("yyyy-MM-dd HH:mm:ss");
             string username = Markup.Escape(msg.User.Name);
             string message = Markup.Escape(msg.Text);
+
+            if (msg.IsSystemMessage)
+                lines.Add($"[dim italic][[{timestamp}]] {message}[/]\n");
             
-            lines.Add($"[bold cyan]{username}[/] [dim][[{timestamp}]][/]:\n{message}\n");
+            else
+                lines.Add($"[bold cyan]{username}[/] [dim][[{timestamp}]][/]:\n{message}\n");
         });
     }
 

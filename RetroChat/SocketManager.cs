@@ -47,11 +47,13 @@ public class SocketManager
         ChatManager.Chat!.RetrieveMessagesFromCache();
 
         HandleError();
-        HandleReceivedMessage(eventName); // Only listen to THIS specific event
+        HandleReceivedMessage(eventName);
         HandleConnection();
         HandleDisconnection();
-        HandleUserJoinedEvent(UserJoinedEvent);
-        HandleUserLeftEvent(UserLeftEvent);
+    
+        // Listen for room-specific join/leave events
+        HandleUserJoinedEvent(UserJoinedEvent + eventName);
+        HandleUserLeftEvent(UserLeftEvent + eventName);
 
         await EstablishConnectionAsync();
     }

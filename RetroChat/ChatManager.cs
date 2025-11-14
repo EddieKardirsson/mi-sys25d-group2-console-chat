@@ -114,7 +114,7 @@ public class ChatManager
                 Console.Clear();
                 Chat = new Chat(user);
                 await SocketManager.Connect();
-                await SendLeaveJoinMessageEvent(user, SocketManager.UserJoinedEvent);
+                await SendLeaveJoinMessageEvent(user, SocketManager.UserJoinedEvent, SocketManager.GeneralChatEvent);
                 await HandleUserMessage(user);
                 return false;
             case '2':
@@ -130,7 +130,7 @@ public class ChatManager
 
             case 'Q':
             case 'q':
-                await SendLeaveJoinMessageEvent(user, SocketManager.UserLeftEvent);
+                await SendLeaveJoinMessageEvent(user, SocketManager.UserLeftEvent, SocketManager.GeneralChatEvent);
                 await DisconnectAndExit();
                 return false; 
 
@@ -187,7 +187,7 @@ public class ChatManager
     
         Chat = new Chat(user, roomName);
         await SocketManager.Connect(eventName); // Use the event name, not room name
-        await SendLeaveJoinMessageEvent(user, SocketManager.UserJoinedEvent);
+        await SendLeaveJoinMessageEvent(user, SocketManager.UserJoinedEvent, eventName);
         await HandleUserMessage(user, eventName); // Pass event name here too
     }
     
@@ -270,13 +270,13 @@ public class ChatManager
             {
                 if (CheckForExitCommand(inputBuffer))
                 {
-                    await SendLeaveJoinMessageEvent(user, SocketManager.UserLeftEvent);
+                    await SendLeaveJoinMessageEvent(user, SocketManager.UserLeftEvent, eventName);
                     await DisconnectAndExit();
                 }
 
                 if (CheckForLeaveChatCommand(inputBuffer))
                 {
-                    await SendLeaveJoinMessageEvent(user, SocketManager.UserLeftEvent);
+                    await SendLeaveJoinMessageEvent(user, SocketManager.UserLeftEvent, eventName);
                     await SocketManager.Disconnect();
                     return (inputBuffer, needsRefresh);
                 }
@@ -344,13 +344,14 @@ public class ChatManager
         }
     }
 
-    public static async Task SendLeaveJoinMessageEvent(User? user, string eventName)
+    public static async Task SendLeaveJoinMessageEvent(User? user, string eventName, string roomEvent)
     {
         if(user == null) return;
         
         if (SocketManager.Client != null && SocketManager.Client.Connected)
         {
-            await SocketManager.Client.EmitAsync(eventName, user.Name);
+            string roomSpecificEvent = eventName + roomEvent;
+            await SocketManager.Client.EmitAsync(roomSpecificEvent, user.Name);
         }
     }
     

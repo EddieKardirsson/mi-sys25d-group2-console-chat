@@ -1,5 +1,6 @@
-using System.Text.Json;
-namespace RetroChat;
+using RetroChat.Services;
+
+namespace RetroChat.Models;
 
 public class Message
 {

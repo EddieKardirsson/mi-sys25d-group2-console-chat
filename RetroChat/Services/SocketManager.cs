@@ -1,15 +1,16 @@
-namespace RetroChat;
-
+using RetroChat.Models;
 using SocketIOClient;
+
+namespace RetroChat.Services;
 
 public class SocketManager
 {
-    private static SocketIO _client = null!;
+    private static SocketIOClient.SocketIO _client = null!;
     private static bool _isConnected = false;
     private static string? _currentEventName = null;
 
     public static bool IsConnected => _isConnected;
-    public static SocketIO Client => _client;
+    public static SocketIOClient.SocketIO Client => _client;
 
     private const string Uri = "wss://api.leetcode.se";
     private const string Path = "/sys25d";
@@ -35,7 +36,7 @@ public class SocketManager
             await Disconnect();
         }
 
-        _client = new SocketIO(Uri, new SocketIOOptions
+        _client = new SocketIOClient.SocketIO(Uri, new SocketIOOptions
         {
             Path = Path
         });
@@ -74,7 +75,7 @@ public class SocketManager
             }
             catch (Exception e)
             {
-                // Silent error handling to not disrupt display
+                System.Diagnostics.Debug.WriteLine($"Message receive error: {e.Message}");
             }
         });
     }
@@ -94,7 +95,7 @@ public class SocketManager
         try
         {
             await _client.ConnectAsync();
-            await Task.Delay(1000);
+            await Task.Delay(ChatManager.MenuDelayMs);
         }
         catch (Exception e)
         {
@@ -127,9 +128,9 @@ public class SocketManager
             {
                 await _client.DisconnectAsync();
             }
-            catch
+            catch (Exception e)
             {
-                // Ignore disconnect errors
+                System.Diagnostics.Debug.WriteLine($"Error: {e.Message}");
             }
             finally
             {

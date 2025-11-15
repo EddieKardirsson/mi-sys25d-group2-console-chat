@@ -1,7 +1,9 @@
 using System.Text.Json;
+using RetroChat.Interfaces;
+using RetroChat.Services;
 using Spectre.Console;
 
-namespace RetroChat;
+namespace RetroChat.Models;
 
 public class Chat : IChat
 {
@@ -45,7 +47,7 @@ public class Chat : IChat
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Error saving messages to cache: {e.Message}");
+            System.Diagnostics.Debug.WriteLine($"Error saving messages to cache: {e.Message}");
         }
     }
 

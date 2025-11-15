@@ -1,4 +1,6 @@
-namespace RetroChat;
+using RetroChat.Models;
+
+namespace RetroChat.Interfaces;
 
 public interface IChat
 {

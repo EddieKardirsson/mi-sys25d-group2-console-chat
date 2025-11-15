@@ -1,4 +1,4 @@
-namespace RetroChat;
+namespace RetroChat.Models;
 
 public class SystemMessage : Message
 {

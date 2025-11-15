@@ -1,8 +1,7 @@
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
+using RetroChat.Models;
 
-namespace RetroChat;
+namespace RetroChat.Services;
 
 public class ChatManager
 {
@@ -13,6 +12,10 @@ public class ChatManager
 
     public static readonly string DataFilePath = "./localData/";
     private static readonly string UserFilePath = DataFilePath + "users.json";
+    
+    private const int MessageCheckDelayMs = 50;
+    internal const int MenuDelayMs = 1000;
+    private const int ReconnectDelayMs = 5000;
     
     #region StartUp
     
@@ -124,7 +127,7 @@ public class ChatManager
 
             case '3':
                 Console.Clear();
-                Console.WriteLine("Send DM");
+                Console.WriteLine("Not available yet.");
                 return false;
 
             case 'Q':
@@ -135,7 +138,7 @@ public class ChatManager
 
             default:
                 Console.WriteLine("Invalid input/choice. Try again.");
-                Thread.Sleep(1000);
+                Thread.Sleep(MenuDelayMs);
                 break;
         }
         return true;
@@ -193,20 +196,6 @@ public class ChatManager
     {
         return "/" + roomName.ToLower().Replace(" ", "");
     }
-
-    private static bool WaitForReturnToMenu()
-    {
-        Console.WriteLine("\nPress 'M' to return to Main Menu or any key to continue");
-        while (true)
-        {
-            char key = char.ToLower(Console.ReadKey(true).KeyChar);
-            if (key == 'm')
-            {
-                return true;
-            }
-            return false;
-        }
-    }
     
     #endregion
     
@@ -242,7 +231,7 @@ public class ChatManager
                     Chat!.DisplayChat();
                 }
 
-                await Task.Delay(50);
+                await Task.Delay(MessageCheckDelayMs);
             }
             else
             {
@@ -286,7 +275,7 @@ public class ChatManager
                 }
                 catch (Exception e)
                 {
-                    // Silent error handling to not disrupt display, needs to be empty
+                    System.Diagnostics.Debug.WriteLine($"Message send error: {e.Message}");
                 }
 
                 inputBuffer = string.Empty;
@@ -316,14 +305,9 @@ public class ChatManager
     }
 
     private static bool CheckForExitCommand(string input)
-        {
-            bool bIsExitCommand = false;
-            SocketManager.ExitCommands.ForEach(c =>
-            {
-                 if(input.ToLower() == c) bIsExitCommand = true;               
-            });
-            return bIsExitCommand;
-        }
+    {
+        return SocketManager.ExitCommands.Any(c => input.ToLower() == c);
+    }
     
 
     private static async Task AttemptReconnectToServer()
@@ -332,12 +316,12 @@ public class ChatManager
         try
         {
             await SocketManager.Connect();
-            await Task.Delay(1000);
+            await Task.Delay(MenuDelayMs);
         }
         catch (Exception e)
         {
             Console.WriteLine($"Reconnection failed: {e.Message}");
-            await Task.Delay(5000); 
+            await Task.Delay(ReconnectDelayMs); 
         }
     }
 

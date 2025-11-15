@@ -24,8 +24,7 @@ public class Chat : IChat
     public virtual void StoreMessage(Message message)
     {
         Messages.Add(message);
-        if(message.IsSystemMessage == false)
-            SaveMessagesToCache();
+        SaveMessagesToCache();
     }
 
     private void SaveMessagesToCache()
@@ -35,7 +34,9 @@ public class Chat : IChat
         _chatFilePath = $"{_dataFilePath}{ChatId}.json";
         try
         {
-            string json = JsonSerializer.Serialize(Messages, new JsonSerializerOptions
+            List<Message> filteredMessages = Messages.Where(m => !m.IsSystemMessage).ToList();
+            
+            string json = JsonSerializer.Serialize(filteredMessages, new JsonSerializerOptions
             {
                 WriteIndented = true,
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase

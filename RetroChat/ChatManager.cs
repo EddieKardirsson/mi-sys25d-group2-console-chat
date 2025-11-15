@@ -94,7 +94,6 @@ public class ChatManager
     
     #region Main Menu
    
-    // TODO: Implement menu display and navigation methods here. 
     public static async Task<bool> DisplayMenu(User user)
     {
 
@@ -142,7 +141,7 @@ public class ChatManager
         return true;
     } 
 
-//ChatRoom submenu
+
     private static async Task<bool> DisplayChatRoomMenu(User user)
     {
 

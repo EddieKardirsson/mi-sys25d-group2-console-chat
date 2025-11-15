@@ -10,8 +10,6 @@ class Program
         User user = chatManager.StartUp();
         Console.WriteLine($"Connected as {user.Name}");
         
-        // TODO: DisplayMenu
-        
         bool showMenu = true;
         while (showMenu)
         {

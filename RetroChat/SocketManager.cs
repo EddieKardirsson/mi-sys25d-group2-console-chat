@@ -107,7 +107,7 @@ public class SocketManager
     {
         string userJoined = response.GetValue<string>();
         
-        Message systemMessage = Message.CreateSystemMessage($"{userJoined} joined the chat.");
+        SystemMessage systemMessage = new SystemMessage($"{userJoined} joined the chat.");
         ChatManager.Chat?.StoreMessage(systemMessage);
     });
 
@@ -115,7 +115,7 @@ public class SocketManager
     {
         string userLeft = response.GetValue<string>();
         
-        Message systemMessage = Message.CreateSystemMessage($"{userLeft} left the chat.");
+        SystemMessage systemMessage = new SystemMessage($"{userLeft} left the chat.");
         ChatManager.Chat?.StoreMessage(systemMessage);
     });
 

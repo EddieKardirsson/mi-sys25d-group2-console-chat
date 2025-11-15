@@ -94,15 +94,14 @@ public class ChatManager
     
     #region Main Menu
    
-    // TODO: Implement menu display and navigation methods here. 
     public static async Task<bool> DisplayMenu(User user)
     {
 
         Console.Clear();
         Console.WriteLine("Menu");
-        Console.WriteLine("1. Send message");
-        Console.WriteLine("2. Select chat room");
-        Console.WriteLine("3 Send private message");
+        Console.WriteLine("1. General Chat");
+        Console.WriteLine("2. Chat Rooms");
+        Console.WriteLine("3. Send DM (under construction)");
         Console.WriteLine("Q. Exit");
         Console.Write("Enter your choice: ");
 
@@ -142,14 +141,14 @@ public class ChatManager
         return true;
     } 
 
-//ChatRoom submenu
+
     private static async Task<bool> DisplayChatRoomMenu(User user)
     {
 
         Console.Clear();
         Console.WriteLine(" Select chat room");
-        Console.WriteLine("1.");
-        Console.WriteLine("2.");
+        Console.WriteLine("1. Room 1");
+        Console.WriteLine("2. Room 2");
         Console.WriteLine("R. Return back to menu");
         Console.Write("Select a chat room: ");
 

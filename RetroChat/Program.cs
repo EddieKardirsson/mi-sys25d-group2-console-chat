@@ -15,8 +15,6 @@ class Program
         
         bool showMenu = true;
         while (showMenu)
-        {
             showMenu = await ChatManager.DisplayMenu(user);
-        }
     }
 }

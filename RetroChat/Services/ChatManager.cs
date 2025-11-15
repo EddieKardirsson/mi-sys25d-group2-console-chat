@@ -27,7 +27,6 @@ public class ChatManager
         
         User user = _storedUsers.Any(u => u.Name == username) ? LoadExistingUser(username) : CreateNewUser(username);
         
-        
         Console.WriteLine("Press any key to continue...");
         Console.ReadKey(false);
         return user;
@@ -62,8 +61,8 @@ public class ChatManager
             Console.WriteLine("Please, enter your username: ");
             username = Console.ReadLine(); 
         }
-        Console.WriteLine($"{username} is logged in");
         
+        Console.WriteLine($"{username} is logged in");
         return username;
     }
 
@@ -71,6 +70,7 @@ public class ChatManager
     {
         User user = _storedUsers.First(u => u.Name == username);
         LoggedInUser = user;
+        
         Console.WriteLine("User already exists. Loading user...");
         return user;
     }
@@ -88,6 +88,7 @@ public class ChatManager
             WriteIndented = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         });
+        
         File.WriteAllText(UserFilePath, usersJson);
         return user;
     }
@@ -115,10 +116,13 @@ public class ChatManager
             case '1':
                 Console.Clear();
                 Chat = new Chat(user);
+                
                 await SocketManager.Connect();
                 await SendLeaveJoinMessageEvent(user, SocketManager.UserJoinedEvent, SocketManager.GeneralChatEvent);
                 await HandleUserMessage(user);
+                
                 return false;
+            
             case '2':
                 bool inChatRoomMenu = true;
                 while (inChatRoomMenu)
@@ -127,8 +131,9 @@ public class ChatManager
 
             case '3':
                 Console.Clear();
-                Console.WriteLine("Not available yet.");
-                return false;
+                Console.WriteLine("Not available yet. Press any key to go back to menu...");
+                Console.ReadKey(false);
+                break;
 
             case 'Q':
             case 'q':
@@ -144,11 +149,10 @@ public class ChatManager
         return true;
     } 
 
-
     private static async Task<bool> DisplayChatRoomMenu(User user)
     {
-
         Console.Clear();
+        
         Console.WriteLine(" Select chat room");
         Console.WriteLine("1. Room 1");
         Console.WriteLine("2. Room 2");
@@ -187,6 +191,7 @@ public class ChatManager
         string eventName = ConvertRoomNameToEvent(roomName);
     
         Chat = new Chat(user, roomName);
+        
         await SocketManager.Connect(eventName); 
         await SendLeaveJoinMessageEvent(user, SocketManager.UserJoinedEvent, eventName);
         await HandleUserMessage(user, eventName); 
@@ -216,31 +221,28 @@ public class ChatManager
                 bool needsRefresh = false;
                 
                 if (Console.KeyAvailable)
-                {
                     (inputBuffer, needsRefresh) = await HandleUserInput(user, eventName, inputBuffer, needsRefresh);
-                }
                 
-                if (Chat!.Messages.Count != lastMessageCount)
+                
+                if (Chat.Messages.Count != lastMessageCount)
                 {
-                    lastMessageCount = Chat!.Messages.Count;
+                    lastMessageCount = Chat.Messages.Count;
                     needsRefresh = true;
                 }
                 
                 if (needsRefresh)
-                {
-                    Chat!.DisplayChat();
-                }
+                    Chat.DisplayChat();
 
                 await Task.Delay(MessageCheckDelayMs);
             }
+            
             else
             {
                 await AttemptReconnectToServer();
 
                 if (SocketManager.Client.Connected)
-                {
-                    Chat!.DisplayChat();
-                }
+                    Chat.DisplayChat();
+                
             }
         }
     }
@@ -260,19 +262,13 @@ public class ChatManager
                     await DisconnectAndExit();
                 }
 
-                if (CheckForLeaveChatCommand(inputBuffer))
-                {
-                    await SendLeaveJoinMessageEvent(user, SocketManager.UserLeftEvent, eventName);
-                    await SocketManager.Disconnect();
-                    return (inputBuffer, needsRefresh);
-                }
-
                 try
                 {
                     Message message = new Message(inputBuffer, user);
                     await message.SendMessage(user, inputBuffer, eventName);
                     Chat!.StoreMessage(message);
                 }
+                
                 catch (Exception e)
                 {
                     System.Diagnostics.Debug.WriteLine($"Message send error: {e.Message}");
@@ -283,12 +279,14 @@ public class ChatManager
                 needsRefresh = true;
             }
         }
+        
         else if (key.Key == ConsoleKey.Backspace && inputBuffer.Length > 0)
         {
             inputBuffer = inputBuffer[..^1];
             Chat!.UpdateInput(inputBuffer);
             needsRefresh = true;
         }
+        
         else if (!char.IsControl(key.KeyChar))
         {
             inputBuffer += key.KeyChar;
@@ -297,11 +295,6 @@ public class ChatManager
         }
 
         return (inputBuffer, needsRefresh);
-    }
-
-    private static bool CheckForLeaveChatCommand(string input)
-    {
-        return SocketManager.LeaveChatCommands.Any(c => input.ToLower() == c);
     }
 
     private static bool CheckForExitCommand(string input)
@@ -313,11 +306,13 @@ public class ChatManager
     private static async Task AttemptReconnectToServer()
     {
         Console.WriteLine("Not connected to the server. Attempting to reconnect...");
+        
         try
         {
             await SocketManager.Connect();
             await Task.Delay(MenuDelayMs);
         }
+        
         catch (Exception e)
         {
             Console.WriteLine($"Reconnection failed: {e.Message}");
@@ -341,11 +336,13 @@ public class ChatManager
     public static async Task DisconnectAndExit()
     {
         LoggedInUser = null;
+        
         if (SocketManager.Client != null)
         {
             Console.WriteLine("Disposing client...");
             await SocketManager.Disconnect();
         }
+        
         Environment.Exit(0);
     }
 }

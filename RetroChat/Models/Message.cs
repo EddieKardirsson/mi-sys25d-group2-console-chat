@@ -22,15 +22,13 @@ public class Message
         await SocketManager.Client.EmitAsync(eventName, this);
     }
 
-    public static async Task ReceiveMessage(Message message)
+    public static async Task ValidateMessage(Message message)
     {
-
         try
         {
-            // Message will be displayed by DisplayChat
-            // Just handle errors here
             if (message == null) throw new ArgumentNullException(nameof(message));
         }
+        
         catch (Exception e)
         {
             Console.WriteLine($"Error deserializing message: {e.Message}");

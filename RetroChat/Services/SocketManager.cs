@@ -21,7 +21,6 @@ public class SocketManager
     public static List<string> Rooms = ["Room 1", "Room 2"];
 
     public static readonly List<string> ExitCommands = ["/quit", "/exit"];
-    public static readonly List<string> LeaveChatCommands = ["/l", "/lc", "/leave"];
 
     public static async Task Connect(string eventName = GeneralChatEvent)
     {
@@ -59,26 +58,24 @@ public class SocketManager
     private static void HandleError() =>
         _client.OnError += (sender, error) => Console.WriteLine(error);
 
-    private static void HandleReceivedMessage(string eventName)
+    private static void HandleReceivedMessage(string eventName) => _client.On(eventName, response =>
     {
-        _client.On(eventName, response =>
+        try
         {
-            try
+            Message receivedMessage = response.GetValue<Message>();
+            
+            if (_currentEventName == eventName)
             {
-                Message receivedMessage = response.GetValue<Message>();
-                
-                if (_currentEventName == eventName)
-                {
-                    _ = Message.ReceiveMessage(receivedMessage);
-                    ChatManager.Chat!.StoreMessage(receivedMessage);
-                }
+                _ = Message.ValidateMessage(receivedMessage);
+                ChatManager.Chat!.StoreMessage(receivedMessage);
             }
-            catch (Exception e)
-            {
-                System.Diagnostics.Debug.WriteLine($"Message receive error: {e.Message}");
-            }
-        });
-    }
+        }
+        catch (Exception e)
+        {
+            System.Diagnostics.Debug.WriteLine($"Message receive error: {e.Message}");
+        }
+    });
+    
 
     private static void HandleConnection() =>
         _client.OnConnected += (sender, eventArgs) => { _isConnected = true; };
@@ -97,6 +94,7 @@ public class SocketManager
             await _client.ConnectAsync();
             await Task.Delay(ChatManager.MenuDelayMs);
         }
+        
         catch (Exception e)
         {
             Console.WriteLine($"Connection failed: {e.Message}");
@@ -128,13 +126,15 @@ public class SocketManager
             {
                 await _client.DisconnectAsync();
             }
+            
             catch (Exception e)
             {
                 System.Diagnostics.Debug.WriteLine($"Error: {e.Message}");
             }
+            
             finally
             {
-                _client?.Dispose();
+                _client.Dispose();
             }
         }
 

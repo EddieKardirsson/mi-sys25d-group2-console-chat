@@ -10,9 +10,9 @@ public class Chat : IChat
     public List<Message> Messages { get; private set; } = new List<Message>();
     private static string? _dataFilePath;
     private static string? _chatFilePath;
-    public const string DefaultChatId = "general";
+    private const string DefaultChatId = "general";
 
-    public string ChatId { get; set; } = DefaultChatId;
+    private string ChatId { get; }
 
     private const int MaxDisplayMessages = 10;
     private string _currentInput = string.Empty;
@@ -43,8 +43,10 @@ public class Chat : IChat
                 WriteIndented = true,
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             });
+            
             File.WriteAllText(_chatFilePath, json);
         }
+        
         catch (Exception e)
         {
             System.Diagnostics.Debug.WriteLine($"Error saving messages to cache: {e.Message}");
@@ -58,6 +60,7 @@ public class Chat : IChat
         if (File.Exists(_chatFilePath))
         {
             string json = File.ReadAllText(_chatFilePath);
+            
             try
             {
                 Messages = JsonSerializer.Deserialize<List<Message>>(json, new JsonSerializerOptions
@@ -65,6 +68,7 @@ public class Chat : IChat
                     PropertyNameCaseInsensitive = true
                 })!;
             }
+            
             catch (Exception e)
             {
                 Console.WriteLine($"Error retrieving messages from cache: {e.Message}");
@@ -74,14 +78,14 @@ public class Chat : IChat
 
     private static void EnsureDirectoryExists()
     {
-        if (!Directory.Exists(_dataFilePath)) Directory.CreateDirectory(_dataFilePath);
+        if (!Directory.Exists(_dataFilePath)) Directory.CreateDirectory(_dataFilePath!);
     }
 
     public virtual void DisplayMessages()
     {
         Messages.ForEach(message =>
         {
-            Console.WriteLine($"\n{message?.User.Name} [{message?.TimeStamp}]: \n{message?.Text}");
+            Console.WriteLine($"\n{message.User.Name} [{message.TimeStamp}]: \n{message.Text}");
         });
     }
 
@@ -155,11 +159,9 @@ public class Chat : IChat
             string username = Markup.Escape(msg.User.Name);
             string message = Markup.Escape(msg.Text);
 
-            if (msg.IsSystemMessage)
-                lines.Add($"[dim italic][[{timestamp}]] {message}[/]\n");
-            
-            else
-                lines.Add($"[bold cyan]{username}[/] [dim][[{timestamp}]][/]:\n{message}\n");
+            lines.Add(msg.IsSystemMessage
+                ? $"[dim italic][[{timestamp}]] {message}[/]\n"
+                : $"[bold cyan]{username}[/] [dim][[{timestamp}]][/]:\n{message}\n");
         });
     }
 

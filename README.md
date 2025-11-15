@@ -23,8 +23,10 @@ dotnet run --project RetroChat.csproj
 2. Provide a username when prompted.
 3. Use the command-driven menu to navigate between chat rooms and send messages.
  - Option `1` - Join the General Chat
- - Option `2` - Chat Rooms submenu 
-     (choose `1` for Room 1 or `2` for Room 2)
+ - Option `2` - Chat Rooms submenu options:
+   - `1` for Room 1
+   - `2` for Room 2
+   - `R` return to the main menu
  - Option `3` - Send Direct Message (under construction)
  - Option `Q` - Quit the program
 

@@ -91,43 +91,48 @@ public class Chat : IChat
 
     public void DisplayChat()
     {
+        string root = "Root";
+        string header = "Header";
+        string messages = "Messages";
+        string input = "Input";
+        
         AnsiConsole.Clear();
 
-        var layout = new Layout("Root")
+        var layout = new Layout(root)
             .SplitRows(
-                new Layout("Header").Size(3),
-                new Layout("Messages"),
-                new Layout("Input").Size(3)
+                new Layout(header).Size(3),
+                new Layout(messages),
+                new Layout(input).Size(3)
             );
         
-        UpdateHeaderPanel(layout);
-        UpdateMessagesPanel(layout);
-        UpdateInputPanel(layout);
+        UpdateHeaderPanel(layout, header);
+        UpdateMessagesPanel(layout, messages);
+        UpdateInputPanel(layout, input);
 
         AnsiConsole.Write(layout);
     }
 
-    private void UpdateHeaderPanel(Layout layout)
+    private void UpdateHeaderPanel(Layout layout, string parameter)
     {
-        layout["Header"].Update(
+        layout[parameter].Update(
             new Panel(new Markup($"[bold cyan]RetroChat - {Markup.Escape(ChatId)}[/]"))
                 .Border(BoxBorder.Double)
                 .BorderColor(Color.Cyan)
                 .Expand());
     }
 
-    private void UpdateMessagesPanel(Layout layout)
+    private void UpdateMessagesPanel(Layout layout, string parameter)
     {
-        layout["Messages"].Update(
+        layout[parameter].Update(
             new Panel(RenderMessages())
                 .Border(BoxBorder.Square)
                 .BorderColor(Color.Cyan)
                 .Expand());
     }
 
-    private void UpdateInputPanel(Layout layout)
+    private void UpdateInputPanel(Layout layout, string parameter)
     {
-        layout["Input"].Update(
+        layout[parameter].Update(
             new Panel(new Markup($"[bold yellow]You:[/] {Markup.Escape(_currentInput)}[blink]|[/]"))
                 .Border(BoxBorder.Double)
                 .BorderColor(Color.Green)
